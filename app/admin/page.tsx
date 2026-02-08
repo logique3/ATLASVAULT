@@ -8,6 +8,10 @@ import {
   X, Check, AlertCircle, Calendar, DollarSign, Filter, Download, Eye, EyeOff, Folder
 } from 'lucide-react'
 import Link from 'next/link'
+import { ServicesManagement } from '@/components/admin/services-management'
+import { CategoriesManagement } from '@/components/admin/categories-management'
+import { PromosManagement } from '@/components/admin/promos-management'
+import { OffersManagement } from '@/components/admin/offers-management'
 
 // ==================== INTERFACES ====================
 interface Product {
@@ -173,214 +177,24 @@ export default function AdminDashboard() {
     </div>
   )
 
-  // ==================== PRODUCTS TAB ====================
+  // ==================== PRODUCTS/SERVICES TAB ====================
   const renderProducts = () => (
-    <div className="space-y-4">
-      <div className="flex gap-4 items-center">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground"
-          />
-        </div>
-        <Button onClick={() => { setEditingItem(null); setShowProductModal(true) }} className="gap-2">
-          <Plus className="w-4 h-4" /> Add Product
-        </Button>
-        {selectedProducts.size > 0 && (
-          <Button variant="destructive" className="gap-2">
-            <Trash2 className="w-4 h-4" /> Delete ({selectedProducts.size})
-          </Button>
-        )}
-      </div>
-
-      <div className="rounded-lg border border-border overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-muted">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold">
-                <input type="checkbox" className="w-4 h-4" />
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Product</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Category</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Stock</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Sales</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {mockProducts.map((product) => (
-              <tr key={product.id} className="hover:bg-muted/50 transition-colors">
-                <td className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4"
-                    checked={selectedProducts.has(product.id)}
-                    onChange={(e) => {
-                      const newSet = new Set(selectedProducts)
-                      if (e.target.checked) newSet.add(product.id)
-                      else newSet.delete(product.id)
-                      setSelectedProducts(newSet)
-                    }}
-                  />
-                </td>
-                <td className="px-4 py-3 font-medium text-foreground">{product.name}</td>
-                <td className="px-4 py-3 text-sm text-muted-foreground capitalize">{product.category}</td>
-                <td className="px-4 py-3 font-semibold text-primary">{product.price} TND</td>
-                <td className="px-4 py-3">{product.stock}</td>
-                <td className="px-4 py-3">{product.sales}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                    {product.active ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="ghost" onClick={() => { setEditingItem(product); setShowProductModal(true) }}>
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost">
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <ServicesManagement />
   )
 
   // ==================== CATEGORIES TAB ====================
   const renderCategories = () => (
-    <div className="space-y-4">
-      <Button onClick={() => { setEditingItem(null); setShowCategoryModal(true) }} className="gap-2">
-        <Plus className="w-4 h-4" /> Add Category
-      </Button>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {mockCategories.map((cat) => (
-          <Card key={cat.id} className={`border-l-4 border-l-primary hover:shadow-lg transition-shadow`}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-3xl mb-2">{cat.icon}</div>
-                  <CardTitle className="text-lg">{cat.name}</CardTitle>
-                  <CardDescription>{cat.description}</CardDescription>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${cat.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                  {cat.active ? 'Active' : 'Hidden'}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-muted-foreground mb-4">{cat.productCount} products</div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1 bg-transparent" onClick={() => { setEditingItem(cat); setShowCategoryModal(true) }}>
-                  <Edit2 className="w-4 h-4 mr-1" /> Edit
-                </Button>
-                <Button size="sm" variant="ghost">
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    <CategoriesManagement />
   )
 
   // ==================== PROMOS TAB ====================
   const renderPromos = () => (
-    <div className="space-y-4">
-      <Button onClick={() => { setEditingItem(null); setShowPromoModal(true) }} className="gap-2">
-        <Plus className="w-4 h-4" /> Create Promo
-      </Button>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {mockPromos.map((promo) => (
-          <Card key={promo.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle>{promo.title}</CardTitle>
-                  <CardDescription className="text-lg text-primary font-semibold mt-1">
-                    {promo.type === 'percentage' ? `${promo.discount}%` : `${promo.discount} TND`} OFF
-                  </CardDescription>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${promo.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                  {promo.active ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm text-muted-foreground mb-4">
-                <p>Applicable to: <span className="font-semibold text-foreground capitalize">{promo.applicableTo}</span></p>
-                <p>Start: <span className="font-semibold text-foreground">{promo.startDate}</span></p>
-                <p>End: <span className="font-semibold text-foreground">{promo.endDate}</span></p>
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1 bg-transparent" onClick={() => { setEditingItem(promo); setShowPromoModal(true) }}>
-                  <Edit2 className="w-4 h-4 mr-1" /> Edit
-                </Button>
-                <Button size="sm" variant="ghost">
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    <PromosManagement />
   )
 
   // ==================== OFFERS TAB ====================
   const renderOffers = () => (
-    <div className="space-y-4">
-      <Button onClick={() => { setEditingItem(null); setShowOfferModal(true) }} className="gap-2">
-        <Plus className="w-4 h-4" /> Create Offer
-      </Button>
-
-      <div className="space-y-3">
-        {mockOffers.map((offer) => (
-          <Card key={offer.id}>
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg text-foreground">{offer.name}</h3>
-                  <p className="text-muted-foreground">{offer.description}</p>
-                  <div className="mt-3 space-y-2 text-sm">
-                    <p>Condition: <span className="font-semibold text-foreground">{offer.condition}</span></p>
-                    <p>Priority: <span className={`font-semibold ${offer.priority === 'high' ? 'text-red-600' : offer.priority === 'medium' ? 'text-orange-600' : 'text-green-600'}`}>{offer.priority}</span></p>
-                    {offer.isLimited && <p>Limited to: <span className="font-semibold text-foreground">{offer.limitedQuantity} uses</span></p>}
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${offer.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                    {offer.active ? 'Active' : 'Inactive'}
-                  </span>
-                  <p className="text-xs text-muted-foreground">Expires: {offer.expiresAt}</p>
-                </div>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1 bg-transparent" onClick={() => { setEditingItem(offer); setShowOfferModal(true) }}>
-                  <Edit2 className="w-4 h-4 mr-1" /> Edit
-                </Button>
-                <Button size="sm" variant="ghost">
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    <OffersManagement />
   )
 
   return (

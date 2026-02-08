@@ -78,9 +78,18 @@ const categoryData = {
 function ProductsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
   
-  // Get category from URL with fallback
-  const selectedCategory = searchParams?.get('category') || 'vault'
+  // Synchronize with search params only after mount
+  const [selectedCategory, setSelectedCategory] = useState('vault')
+
+  useEffect(() => {
+    setIsMounted(true)
+    const category = searchParams?.get('category')
+    if (category) {
+      setSelectedCategory(category)
+    }
+  }, [searchParams])
   
   // Initialize state with proper defaults
   const [sortBy, setSortBy] = useState<'popular' | 'price-low' | 'price-high' | 'rating' | 'newest'>('popular')
@@ -88,19 +97,26 @@ function ProductsContent() {
   const [minRating, setMinRating] = useState(0)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-  // Generate products once per category
+  // Generate products once per category with consistent ratings based on ID hash
   const categoryServices = useMemo(() => {
     const categoryItems = categoryData[selectedCategory as keyof typeof categoryData]?.items || []
-    return categoryItems.map((item: any) => ({
-      id: item.id,
-      slug: item.slug,
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      category: selectedCategory,
-      rating: Math.random() * 2 + 3.5,
-      reviews_count: Math.floor(Math.random() * 500) + 50,
-    }))
+    return categoryItems.map((item: any) => {
+      // Use a deterministic hash based on item id to generate consistent ratings
+      const hash = item.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
+      const rating = (hash % 20) / 10 + 3.5 // Range 3.5-5.5
+      const reviews = (hash % 500) + 50 // Range 50-550
+
+      return {
+        id: item.id,
+        slug: item.slug,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        category: selectedCategory,
+        rating: Math.round(rating * 10) / 10,
+        reviews_count: reviews,
+      }
+    })
   }, [selectedCategory])
 
   // Filter and sort products
@@ -143,10 +159,25 @@ function ProductsContent() {
   }
 
   const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category)
     router.push(`/products?category=${category}`)
   }
 
   const currentCategory = categoryData[selectedCategory as keyof typeof categoryData]
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="border-b border-border sticky top-16 z-30 bg-background/95 backdrop-blur">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-1 py-4">
+            {Object.entries(categoryData).map(([key, data]) => (
+              <div key={key} className="px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-muted h-10 w-20 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">

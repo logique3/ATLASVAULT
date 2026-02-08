@@ -252,6 +252,17 @@ export default function ProductDetailPage({
                 <span>Account activated within 5-10 minutes after payment</span>
               </div>
 
+              {/* WhatsApp Ordering Info Box */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-3">
+                <div className="flex gap-2">
+                  <MessageCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-green-900">
+                    <p className="font-semibold mb-1">Continue your order on WhatsApp</p>
+                    <p>All payment methods (D17, Flouci, Card) are available through WhatsApp. Our support team is ready to assist you 24/7.</p>
+                  </div>
+                </div>
+              </div>
+
               {/* WhatsApp Ordering */}
               <Button
                 size="lg"
@@ -259,7 +270,7 @@ export default function ProductDetailPage({
                 onClick={handleOrderViaWhatsApp}
               >
                 <MessageCircle className="w-5 h-5" />
-                Order via WhatsApp
+                Continue Order on WhatsApp
               </Button>
             </div>
           </div>

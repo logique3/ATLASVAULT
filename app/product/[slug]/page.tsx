@@ -1,9 +1,4 @@
-'use client';
-
 import { Button } from "@/components/ui/button"
-
-import { useState } from "react"
-
 import Link from 'next/link';
 import { AlertCircle } from 'lucide-react';
 import { PRODUCTS_DATABASE } from '@/lib/products-db';

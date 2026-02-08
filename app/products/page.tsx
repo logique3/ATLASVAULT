@@ -78,18 +78,10 @@ const categoryData = {
 function ProductsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [isMounted, setIsMounted] = useState(false)
   
-  // Synchronize with search params only after mount
-  const [selectedCategory, setSelectedCategory] = useState('vault')
-
-  useEffect(() => {
-    setIsMounted(true)
-    const category = searchParams?.get('category')
-    if (category) {
-      setSelectedCategory(category)
-    }
-  }, [searchParams])
+  // Get category from URL, with fallback to 'vault'
+  const initialCategory = searchParams?.get('category') || 'vault'
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   
   // Initialize state with proper defaults
   const [sortBy, setSortBy] = useState<'popular' | 'price-low' | 'price-high' | 'rating' | 'newest'>('popular')
@@ -127,16 +119,16 @@ function ProductsContent() {
 
     switch (sortBy) {
       case 'price-low':
-        return filtered.sort((a, b) => a.price - b.price)
+        return filtered.slice().sort((a, b) => a.price - b.price)
       case 'price-high':
-        return filtered.sort((a, b) => b.price - a.price)
+        return filtered.slice().sort((a, b) => b.price - a.price)
       case 'rating':
-        return filtered.sort((a, b) => b.rating - a.rating)
+        return filtered.slice().sort((a, b) => b.rating - a.rating)
       case 'newest':
-        return filtered.reverse()
+        return filtered.slice().reverse()
       case 'popular':
       default:
-        return filtered.sort((a, b) => b.reviews_count - a.reviews_count)
+        return filtered.slice().sort((a, b) => b.reviews_count - a.reviews_count)
     }
   }, [categoryServices, sortBy, priceRange, minRating])
 
@@ -164,20 +156,6 @@ function ProductsContent() {
   }
 
   const currentCategory = categoryData[selectedCategory as keyof typeof categoryData]
-
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="border-b border-border sticky top-16 z-30 bg-background/95 backdrop-blur">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-1 py-4">
-            {Object.entries(categoryData).map(([key, data]) => (
-              <div key={key} className="px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-muted h-10 w-20 animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-background">

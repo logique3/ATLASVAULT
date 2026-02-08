@@ -1,11 +1,11 @@
 'use client';
 
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+
 import { useState } from "react"
-import { useCart } from "@/hooks/use-cart"; // Import useCart hook
+
 import Link from 'next/link';
-import { AlertCircle, ChevronRight, Star, CheckCircle, Heart, Clock, MessageCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { PRODUCTS_DATABASE } from '@/lib/products-db';
 import { ProductDetailContent } from './product-detail-content';
 
@@ -85,13 +85,6 @@ export default async function ProductDetailPage({
 }) {
   const resolvedParams = await params;
   const product = productDatabase[resolvedParams.slug];
-  const [quantity, setQuantity] = useState(1);
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-
-  const handleOrderViaWhatsApp = () => {
-    // Implement WhatsApp ordering logic here
-  };
 
   if (!product) {
     return (

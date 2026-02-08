@@ -78,18 +78,14 @@ const categoryData = {
 function ProductsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [isMounted, setIsMounted] = useState(false)
   
-  // Synchronize with search params only after mount
+  // Initialize with vault to avoid hydration mismatch
   const [selectedCategory, setSelectedCategory] = useState('vault')
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
-    const category = searchParams?.get('category')
-    if (category) {
-      setSelectedCategory(category)
-    }
-  }, [searchParams])
+  }, [])
   
   // Initialize state with proper defaults
   const [sortBy, setSortBy] = useState<'popular' | 'price-low' | 'price-high' | 'rating' | 'newest'>('popular')
@@ -119,25 +115,29 @@ function ProductsContent() {
     })
   }, [selectedCategory])
 
-  // Filter and sort products
+  // Filter and sort products with stable ordering
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = categoryServices.filter(
       (product) => product.price >= priceRange[0] && product.price <= priceRange[1] && product.rating >= minRating
     )
 
-    switch (sortBy) {
-      case 'price-low':
-        return filtered.sort((a, b) => a.price - b.price)
-      case 'price-high':
-        return filtered.sort((a, b) => b.price - a.price)
-      case 'rating':
-        return filtered.sort((a, b) => b.rating - a.rating)
-      case 'newest':
-        return filtered.reverse()
-      case 'popular':
-      default:
-        return filtered.sort((a, b) => b.reviews_count - a.reviews_count)
-    }
+    const sorted = filtered.slice().sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price || a.id.localeCompare(b.id)
+        case 'price-high':
+          return b.price - a.price || a.id.localeCompare(b.id)
+        case 'rating':
+          return b.rating - a.rating || a.id.localeCompare(b.id)
+        case 'newest':
+          return categoryServices.indexOf(b) - categoryServices.indexOf(a) || a.id.localeCompare(b.id)
+        case 'popular':
+        default:
+          return b.reviews_count - a.reviews_count || a.id.localeCompare(b.id)
+      }
+    })
+
+    return sorted
   }, [categoryServices, sortBy, priceRange, minRating])
 
   const addToCart = (serviceId: string) => {
@@ -164,20 +164,6 @@ function ProductsContent() {
   }
 
   const currentCategory = categoryData[selectedCategory as keyof typeof categoryData]
-
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="border-b border-border sticky top-16 z-30 bg-background/95 backdrop-blur">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-1 py-4">
-            {Object.entries(categoryData).map(([key, data]) => (
-              <div key={key} className="px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-muted h-10 w-20 animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-background">

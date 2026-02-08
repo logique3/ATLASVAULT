@@ -79,9 +79,18 @@ function ProductsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   
-  // Get category from URL, with fallback to 'vault'
-  const initialCategory = searchParams?.get('category') || 'vault'
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
+  // Initialize with vault to avoid hydration mismatch
+  const [selectedCategory, setSelectedCategory] = useState('vault')
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    // Only sync with URL after mount to prevent hydration mismatch
+    setIsMounted(true)
+    const categoryFromUrl = searchParams?.get('category')
+    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
+      setSelectedCategory(categoryFromUrl)
+    }
+  }, [])
   
   // Initialize state with proper defaults
   const [sortBy, setSortBy] = useState<'popular' | 'price-low' | 'price-high' | 'rating' | 'newest'>('popular')

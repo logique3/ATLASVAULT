@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, Search, ShoppingCart, MessageCircle, Home, Moon, Sun } from 'lucide-react';
+import { Menu, X, Search, ShoppingCart, MessageCircle, Home, Moon, Sun, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/lib/user-context';
 
 const categories = [
   { id: 'vault', name: 'The Vault' },
@@ -16,6 +17,8 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, logout, isAuthenticated, isAdmin } = useUser();
 
   return (
     <>
@@ -114,6 +117,63 @@ export function Header() {
               >
                 <MessageCircle className="w-5 h-5 text-[#25D366]" />
               </a>
+
+              {/* User Account Menu */}
+              {isAuthenticated && user ? (
+                <div className="relative group hidden sm:block">
+                  <button
+                    className="flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors"
+                    title={user.name}
+                  >
+                    <User className="w-5 h-5 text-foreground" />
+                  </button>
+                  <div className="absolute right-0 top-full hidden group-hover:block pt-2 z-50">
+                    <div className="bg-card border border-border rounded-lg shadow-lg py-2 min-w-48">
+                      <div className="px-4 py-2 border-b border-border">
+                        <p className="text-sm font-semibold text-foreground">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                        {isAdmin && (
+                          <p className="text-xs text-primary font-medium mt-1">Admin Account</p>
+                        )}
+                      </div>
+                      <Link
+                        href="/account"
+                        className="block px-4 py-2 hover:bg-muted text-foreground transition-colors text-sm"
+                      >
+                        My Account
+                      </Link>
+                      {isAdmin && (
+                        <Link
+                          href="/admin"
+                          className="block px-4 py-2 hover:bg-muted text-foreground transition-colors text-sm"
+                        >
+                          Admin Dashboard
+                        </Link>
+                      )}
+                      <button
+                        onClick={logout}
+                        className="w-full text-left px-4 py-2 hover:bg-muted text-foreground transition-colors text-sm flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2 hidden sm:flex">
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <Link href="/auth/login">Sign In</Link>
+                  </Button>
+                  <Button asChild size="sm">
+                    <Link href="/auth/signup">Sign Up</Link>
+                  </Button>
+                </div>
+              )}
 
               {/* Mobile Menu Toggle */}
               <button

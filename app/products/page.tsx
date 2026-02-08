@@ -84,12 +84,7 @@ function ProductsContent() {
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
-    // Only sync with URL after mount to prevent hydration mismatch
     setIsMounted(true)
-    const categoryFromUrl = searchParams?.get('category')
-    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
-      setSelectedCategory(categoryFromUrl)
-    }
   }, [])
   
   // Initialize state with proper defaults
@@ -120,25 +115,29 @@ function ProductsContent() {
     })
   }, [selectedCategory])
 
-  // Filter and sort products
+  // Filter and sort products with stable ordering
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = categoryServices.filter(
       (product) => product.price >= priceRange[0] && product.price <= priceRange[1] && product.rating >= minRating
     )
 
-    switch (sortBy) {
-      case 'price-low':
-        return filtered.slice().sort((a, b) => a.price - b.price)
-      case 'price-high':
-        return filtered.slice().sort((a, b) => b.price - a.price)
-      case 'rating':
-        return filtered.slice().sort((a, b) => b.rating - a.rating)
-      case 'newest':
-        return filtered.slice().reverse()
-      case 'popular':
-      default:
-        return filtered.slice().sort((a, b) => b.reviews_count - a.reviews_count)
-    }
+    const sorted = filtered.slice().sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price || a.id.localeCompare(b.id)
+        case 'price-high':
+          return b.price - a.price || a.id.localeCompare(b.id)
+        case 'rating':
+          return b.rating - a.rating || a.id.localeCompare(b.id)
+        case 'newest':
+          return categoryServices.indexOf(b) - categoryServices.indexOf(a) || a.id.localeCompare(b.id)
+        case 'popular':
+        default:
+          return b.reviews_count - a.reviews_count || a.id.localeCompare(b.id)
+      }
+    })
+
+    return sorted
   }, [categoryServices, sortBy, priceRange, minRating])
 
   const addToCart = (serviceId: string) => {
